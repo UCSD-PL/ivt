@@ -47,11 +47,15 @@
 #include <system_error>
 #include <vector>
 
+#include "llvm/Transforms/SafeDispatch/SafeDispatch.h"
+
 #ifndef LDPO_PIE
 // FIXME: remove this declaration when we stop maintaining Ubuntu Quantal and
 // Precise and Debian Wheezy (binutils 2.23 is required)
 # define LDPO_PIE 3
 #endif
+
+#define DEBUG
 
 using namespace llvm;
 
@@ -60,6 +64,17 @@ struct claimed_file {
   void *handle;
   std::vector<ld_plugin_symbol> syms;
 };
+
+void print(const char *fmt, ...)
+{
+#ifdef DEBUG
+  va_list args;
+  va_start(args, fmt);
+  printf("SD] ");
+  vprintf(fmt, args);
+  va_end(args);
+#endif
+}
 }
 
 static ld_plugin_status discard_message(int level, const char *format, ...) {
@@ -313,6 +328,8 @@ static void diagnosticHandler(const DiagnosticInfo &DI, void *Context) {
 /// possible.
 static ld_plugin_status claim_file_hook(const ld_plugin_input_file *file,
                                         int *claimed) {
+  print("claimed file: %s\n", file->name);
+
   LLVMContext Context;
   MemoryBufferRef BufferRef;
   std::unique_ptr<MemoryBuffer> Buffer;
@@ -731,6 +748,9 @@ static void runLTOPasses(Module &M, TargetMachine &TM) {
   PMB.SLPVectorize = true;
   PMB.OptLevel = options::OptLevel;
   PMB.populateLTOPassManager(passes);
+
+  passes.add(createChangeConstantPass());
+
   passes.run(M);
 }
 

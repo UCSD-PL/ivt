@@ -681,6 +681,7 @@ include/llvm/Transforms/InstCombine/InstCombineWorklist.h
 include/llvm/Transforms/IPO/InlinerPass.h
 include/llvm/Transforms/IPO/LowerBitSets.h
 include/llvm/Transforms/IPO/PassManagerBuilder.h
+include/llvm/Transforms/SafeDispatch/SafeDispatch.h
 include/llvm/Transforms/Scalar/EarlyCSE.h
 include/llvm/Transforms/Scalar/LowerExpectIntrinsic.h
 include/llvm/Transforms/Scalar/SimplifyCFG.h
@@ -2208,6 +2209,8 @@ lib/Transforms/ObjCARC/ProvenanceAnalysis.h
 lib/Transforms/ObjCARC/ProvenanceAnalysisEvaluator.cpp
 lib/Transforms/ObjCARC/PtrState.cpp
 lib/Transforms/ObjCARC/PtrState.h
+lib/Transforms/SafeDispatch/ChangeConstant.cpp
+lib/Transforms/SafeDispatch/Makefile
 lib/Transforms/Scalar/ADCE.cpp
 lib/Transforms/Scalar/AlignmentFromAssumptions.cpp
 lib/Transforms/Scalar/BDCE.cpp
@@ -9831,3 +9834,4 @@ utils/unittest/googletest/src/gtest-typed-test.cc
 utils/unittest/googletest/src/gtest.cc
 utils/unittest/UnitTestMain/TestMain.cpp
 utils/yaml-bench/YAMLBench.cpp
+lib/Transforms/SafeDispatch/SafeDispatch.cpp
