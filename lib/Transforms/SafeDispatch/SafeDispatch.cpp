@@ -10,7 +10,7 @@ using namespace llvm;
 
 /// initializeSafeDispatchPasses - Initialize all passes linked into the
 /// SafeDispatch library.
-void llvm::initializeSafeDispatch(PassRegistry &) {
+void llvm::initializeSafeDispatch(PassRegistry &Registry) {
   initializeChangeConstantPass(Registry);
 }
 

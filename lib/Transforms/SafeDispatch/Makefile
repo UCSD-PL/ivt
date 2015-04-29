@@ -8,7 +8,7 @@
 ##===----------------------------------------------------------------------===##
 
 LEVEL = ../../..
-LIBRARYNAME = SafeDispatch
+LIBRARYNAME = LLVMSafeDispatch
 BUILD_ARCHIVE = 1
 
 include $(LEVEL)/Makefile.common

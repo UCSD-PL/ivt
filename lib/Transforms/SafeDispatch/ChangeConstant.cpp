@@ -1,5 +1,5 @@
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/SafeDispatch/SafeDispatch.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/IR/InstIterator.h"
 #include "llvm/IR/Instruction.h"
@@ -9,12 +9,6 @@
 using namespace llvm;
 
 #define DEBUG_TYPE "cc"
-
-// declare the helper functions first
-namespace llvm {
-  void initializeChangeConstantPass(PassRegistry &Registry);
-  BasicBlockPass* createChangeConstantPass();
-}
 
 namespace {
   struct ChangeConstant : public BasicBlockPass {
