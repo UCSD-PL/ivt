@@ -46,7 +46,6 @@
 #include <plugin-api.h>
 #include <system_error>
 #include <vector>
-
 #include "llvm/Transforms/SafeDispatch/SafeDispatch.h"
 
 #ifndef LDPO_PIE
@@ -738,6 +737,7 @@ static void runLTOPasses(Module &M, TargetMachine &TM) {
 
   legacy::PassManager passes;
   passes.add(createTargetTransformInfoWrapperPass(TM.getTargetIRAnalysis()));
+//  passes.add(createChangeConstantPass());
 
   PassManagerBuilder PMB;
   PMB.LibraryInfo = new TargetLibraryInfoImpl(Triple(TM.getTargetTriple()));
@@ -748,8 +748,6 @@ static void runLTOPasses(Module &M, TargetMachine &TM) {
   PMB.SLPVectorize = true;
   PMB.OptLevel = options::OptLevel;
   PMB.populateLTOPassManager(passes);
-
-  passes.add(createChangeConstantPass());
 
   passes.run(M);
 }

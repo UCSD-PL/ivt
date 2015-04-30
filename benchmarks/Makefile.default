@@ -21,7 +21,6 @@ LD_LIB_FOLDERS = -L/usr/lib/gcc/x86_64-linux-gnu/4.8 \
 LD_PLUGIN = -plugin $(GOLD_PLUGIN) -plugin-opt=mcpu=x86-64
 
 LD_LIBS = -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc \
-		  SafeDispatch.so \
 		  /usr/lib/gcc/x86_64-linux-gnu/4.8/crtend.o \
 		  /usr/lib/gcc/x86_64-linux-gnu/4.8/../../../x86_64-linux-gnu/crtn.o
 
