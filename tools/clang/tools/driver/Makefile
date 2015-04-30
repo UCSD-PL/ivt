@@ -33,7 +33,7 @@ endif
 
 LINK_COMPONENTS := $(TARGETS_TO_BUILD) asmparser bitreader bitwriter codegen \
                    instrumentation ipo irreader linker objcarcopts option \
-                   profiledata selectiondag
+                   profiledata selectiondag SafeDispatch
 USEDLIBS = clangFrontendTool.a clangFrontend.a clangDriver.a \
            clangSerialization.a clangCodeGen.a clangParse.a clangSema.a \
            clangRewriteFrontend.a clangRewrite.a
@@ -70,6 +70,6 @@ TOOL_INFO_VERSION := $(word 3,$(shell grep "CLANG_VERSION " \
 ifdef LLVM_SUBMIT_VERSION
 TOOL_INFO_BUILD_VERSION := $(LLVM_SUBMIT_VERSION).$(LLVM_SUBMIT_SUBVERSION)
 else
-TOOL_INFO_BUILD_VERSION := 
+TOOL_INFO_BUILD_VERSION :=
 endif
 endif

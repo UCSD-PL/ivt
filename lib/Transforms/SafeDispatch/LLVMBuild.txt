@@ -20,4 +20,4 @@ type = Library
 name = SafeDispatch
 parent = Transforms
 library_name = SafeDispatch
-required_libraries = Analysis Core InstCombine ProfileData Support TransformUtils
+required_libraries = Analysis Core Support TransformUtils
