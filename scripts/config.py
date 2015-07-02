@@ -10,17 +10,13 @@ import sys
 ldRe = re.compile("GNU ld \(GNU Binutils for Ubuntu\) ([.\d]+)")
 
 # When this is False, we remove any optimization flag from the compiler command
-ENABLE_COMPILER_OPT = False
+ENABLE_COMPILER_OPT = True
 
 # Enabled linker flags
 sd_config = {
-  "SD_ENABLE_INTERLEAVING" : True,  # interleave the vtables and add the range checks
-  "SD_ENABLE_CHECKS"       : True,  # interleave the vtables and add the range checks
-  "SD_ENABLE_LINKER_O2"    : True,  # runs O2 level optimizations during linking
-  "SD_ENABLE_LTO"          : True,  # runs link time optimization passes
-  "SD_LTO_EMIT_LLVM"       : False, # emit bitcode rather than machine code
-  "SD_LTO_SAVE_TEMPS"      : True,  # save bitcode before & after linker passes
-  "LLVM_CFI"               : False, # compile with llvm's cfi technique
+  "LLVM_CFI"          : True, # compile with llvm's cfi technique
+  "SD_LTO_EMIT_LLVM"  : False, # emit bitcode rather than machine code
+  "SD_LTO_SAVE_TEMPS" : True,  # save bitcode before & after linker passes
 }
 
 isTrue = lambda s : s.lower() in ['true', '1', 't', 'y', 'yes', 'ok']
@@ -30,17 +26,11 @@ for k in sd_config:
   if env_value is not None:
     sd_config[k] = isTrue(env_value)
 
-assert not sd_config["SD_ENABLE_CHECKS"] or sd_config["SD_ENABLE_INTERLEAVING"]
-
 compiler_flag_opt_map = {
-  "SD_ENABLE_CHECKS"    : "-femit-vtbl-checks",
 }
 
 # corresponding plugin options of the linker flags
 linker_flag_opt_map = {
-  "SD_ENABLE_INTERLEAVING" : "-plugin-opt=emit-vtbl-checks",
-  "SD_ENABLE_LINKER_O2"    : "-plugin-opt=run-O2-passes",
-  "SD_ENABLE_LTO"          : "-plugin-opt=run-LTO-passes",
   "SD_LTO_EMIT_LLVM"       : "-plugin-opt=emit-llvm",
   "SD_LTO_SAVE_TEMPS"      : "-plugin-opt=save-temps",
 }
@@ -130,9 +120,6 @@ def read_config():
   for (k,v) in sd_config.items():
     clang_config[k] = v
 
-  if sd_config["SD_ENABLE_CHECKS"]:
-    clang_config["CXX_FLAGS"].append(compiler_flag_opt_map["SD_ENABLE_CHECKS"])
-
   if sd_config["LLVM_CFI"]:
     clang_config["CXX_FLAGS"].append('-fsanitize=cfi-vcall')
     clang_config["SD_LIB_FOLDERS"] = []
@@ -146,7 +133,7 @@ if __name__ == '__main__':
     key = sys.argv[1].upper()
 
     if key == "ENABLE_SD":
-      print d["SD_ENABLE_INTERLEAVING"] or d["SD_ENABLE_CHECKS"]
+      print "False"
       sys.exit(0)
 
     assert key in d
