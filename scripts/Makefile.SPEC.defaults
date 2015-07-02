@@ -1,0 +1,7 @@
+# these 2 are the only variables
+LLVM_DIR     = /home/sd/src/src/third_party/llvm-3.7
+SCRIPTS_DIR  = $(LLVM_DIR)/scripts
+
+CXX=$(SCRIPTS_DIR)/clang_wrapper.sh
+
+print-%: ; @echo $*=$($*)

@@ -1,0 +1,14 @@
+main
+*.o
+*.so
+*.a
+*.bc
+*.ll
+
+*.creator.user
+*.config
+!Makefile.config
+*.creator
+*.files
+*.includes
+output.txt

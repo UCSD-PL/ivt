@@ -1,0 +1,30 @@
+LIBS = $(patsubst lib%.a,-l%,$(LIB_NAMES))
+OPT  = -O2
+
+ifeq ($(NO_LTO),OK)
+CC = g++
+LD = $(CC)
+AR = ar
+else
+CC = "$(LLVM_SCRIPTS_DIR)/clang_wrapper.sh"
+LD = $(CC)
+AR = $(shell $(LLVM_SCRIPTS_DIR)/config.py AR)
+endif
+
+CC += $(OPT)
+
+ALL_OBJS = $(OBJS) main.o
+
+all:	main
+
+main :	$(ALL_OBJS) $(LIB_NAMES)
+		@$(LD) -o main -L. $^ $(LIBS)
+
+%.o: 	%.cpp
+		@$(CC) -c $< -o $@
+
+clean:
+		@rm -f *.o *.a main
+
+clean-all: clean
+		@rm -f *.bc *.ll output.txt
