@@ -136,7 +136,7 @@ namespace {
       vcallMDId = M.getMDKindID(SD_MD_VCALL);
 
       buildClouds(M);          // part 1
-      //printClouds();
+      printClouds();
       interleaveClouds(M);     // part 2
 
       sd_print("Finished safedispatch analysis\n");
@@ -641,7 +641,7 @@ namespace {
             llvm::Value *diffRor = builder.CreateOr(diffShr, diffShl);
 
             llvm::Value *inRange = builder.CreateICmpULE(diffRor, width);
-              
+
             CI->replaceAllUsesWith(inRange);
             CI->eraseFromParent();
 
@@ -653,7 +653,7 @@ namespace {
             CI->replaceAllUsesWith(inRange);
             CI->eraseFromParent();
             eqSubst += 1;
-          }        
+          }
         }
       }
 
@@ -1071,7 +1071,7 @@ bool SDModule::verifyInterleavedCloud(vtbl_name_t& vtbl) {
 
     if ((minMax.second->first - minMax.first->first + 1) != oldVtblSize) {
         std::cerr << "In ivtbl " << vtbl << " min-max rangefor "
-          << n.first << "," << n.second << 
+          << n.first << "," << n.second <<
           " is (" << minMax.first->first << "-"
           << minMax.second->first << ") expected size "
           << oldVtblSize << std::endl;
@@ -1079,7 +1079,7 @@ bool SDModule::verifyInterleavedCloud(vtbl_name_t& vtbl) {
     }
 
     if (indMap[n].size() != oldVtblSize) {
-        std::cerr << "In ivtbl " << vtbl << " index mapping for " << n.first << "," << n.second << 
+        std::cerr << "In ivtbl " << vtbl << " index mapping for " << n.first << "," << n.second <<
           " has " << indMap[n].size() << " expected " << oldVtblSize << std::endl;
         return false;
     }
@@ -2478,7 +2478,7 @@ void SDChangeIndices::handleSDGetCheckedVPtr(Module* M) {
 
         // After splitting the old block ends in an unconditional jump
         llvm::Instruction* oldBBTerm = oldBB->getTerminator();
-        
+
         if (rangeWidth == 1) {
           // Emit single cmp
           IRBuilder<> builder(oldBBTerm);
