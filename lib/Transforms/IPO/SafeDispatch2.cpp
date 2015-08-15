@@ -10,6 +10,7 @@
 #include "llvm/IR/InstrTypes.h"
 #include "llvm/IR/Intrinsics.h"
 #include "llvm/IR/InlineAsm.h"
+#include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Pass.h"
 #include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/Transforms/Utils/Local.h"
@@ -603,8 +604,13 @@ namespace {
         for (const Use &U : sd_subst_rangeF->uses()) {
           // get the call inst
           llvm::CallInst* CI = cast<CallInst>(U.getUser());
-          IRBuilder<> builder(CI);
+          // get the branch
+          assert(CI->hasOneUse());
+          llvm::BranchInst* BI = dyn_cast<BranchInst>(CI->use_begin()->getUser());
+          assert(BI);
 
+          // Insert no-ops prior to call inst
+          IRBuilder<> builder(CI);
           // get the arguments
           llvm::Value* vptr = CI->getArgOperand(0);
           llvm::Constant* start = dyn_cast<Constant>(CI->getArgOperand(1));
@@ -622,20 +628,11 @@ namespace {
           llvm::ConstantInt* startOff = dyn_cast<llvm::ConstantInt>(start->getOperand(1));
 
           if (validConstVptr(rootVtbl, startOff->getSExtValue(), widthInt, DL, vptr, 0)) {
-            CI->replaceAllUsesWith(llvm::ConstantInt::getTrue(C));
-            CI->eraseFromParent();
+            // No No-ops
             constPtr++;
           } else
           if (widthInt > 1) {
-            // Rotate right by 3 to push the lowest order bits into the higher order bits
-            llvm::Value *vptrInt = builder.CreatePtrToInt(vptr, IntPtrTy);
-            llvm::Value *diff = builder.CreateSub(vptrInt, start);
-            llvm::Value *diffShr = builder.CreateLShr(diff, alignmentBits);
-            llvm::Value *diffShl = builder.CreateShl(diff, DL.getPointerSizeInBits(0) - alignmentBits);
-            llvm::Value *diffRor = builder.CreateOr(diffShr, diffShl);
-
-            llvm::Value *inRange = builder.CreateICmpULE(diffRor, width);
-              
+            // Range no-ops
             llvm::InlineAsm *AsmCode = InlineAsm::get(FunctionType::get(Type::getVoidTy(CI->getContext()), false),
                                                       "jmp .+3 \n"
                                                       "nop",
@@ -645,18 +642,12 @@ namespace {
                                                       llvm::InlineAsm::AD_ATT);
             assert(AsmCode);
 
-            IRBuilder<> builder(CI);
             Instruction* emptyInst = builder.CreateCall(AsmCode);
             assert(emptyInst);
 
-            CI->replaceAllUsesWith(inRange);
-            CI->eraseFromParent();
-
             rangeSubst += 1;
           } else {
-            llvm::Value *vptrInt = builder.CreatePtrToInt(vptr, IntPtrTy);
-            llvm::Value *inRange = builder.CreateICmpEQ(vptrInt, start);
-
+            // Eq no-ops
             llvm::InlineAsm *AsmCode = InlineAsm::get(FunctionType::get(Type::getVoidTy(CI->getContext()), false),
                                                       "jmp .+3\n"
                                                       "nop",
@@ -665,15 +656,19 @@ namespace {
                                                       false,
                                                       llvm::InlineAsm::AD_ATT);
             assert(AsmCode);
-
-            IRBuilder<> builder(CI);
             Instruction* emptyInst = builder.CreateCall(AsmCode);
             assert(emptyInst);
-
-            CI->replaceAllUsesWith(inRange);
-            CI->eraseFromParent();
             eqSubst += 1;
           }        
+
+          BasicBlock *trueB = BI->getSuccessor(0);
+          // Replace branch with a direct jump
+          builder.CreateBr(trueB);
+          // Remove old CI and BI
+          BI->eraseFromParent();
+          CI->eraseFromParent();
+          // Merge blocks.
+          assert(MergeBlockIntoPredecessor(trueB));
         }
       }
 
