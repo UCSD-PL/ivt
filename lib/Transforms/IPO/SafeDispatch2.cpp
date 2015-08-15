@@ -577,6 +577,8 @@ namespace {
 
     bool runOnModule(Module &M) {
       int64_t indexSubst = 0, rangeSubst = 0, eqSubst = 0, constPtr = 0;
+      int64_t merged = 0, notmerged = 0;
+
       Function *sd_subst_indexF =
           M.getFunction(Intrinsic::getName(Intrinsic::sd_subst_vtbl_index));
        Function *sd_subst_rangeF =
@@ -604,10 +606,6 @@ namespace {
         for (const Use &U : sd_subst_rangeF->uses()) {
           // get the call inst
           llvm::CallInst* CI = cast<CallInst>(U.getUser());
-          // get the branch
-          assert(CI->hasOneUse());
-          llvm::BranchInst* BI = dyn_cast<BranchInst>(CI->use_begin()->getUser());
-          assert(BI);
 
           // Insert no-ops prior to call inst
           IRBuilder<> builder(CI);
@@ -693,18 +691,93 @@ namespace {
             assert(emptyInst);
             eqSubst += 1;
           }        
+          // Need to walk over and find all branches
+          
+          std::vector<User*> users(CI->user_begin(), CI->user_end());
+          std::vector<Instruction*> todelete;
+          std::vector<BasicBlock*> tomerge;
+          std::set<BasicBlock*> toclean;
 
-          BasicBlock *trueB = BI->getSuccessor(0);
-          // Replace branch with a direct jump
-          builder.CreateBr(trueB);
+          while (!users.empty()) {
+            llvm::User *u = users.back();
+            llvm::Instruction *I = dyn_cast<Instruction>(u);
+  
+            assert(I);
+            users.pop_back();
+
+            llvm::PHINode * PI = dyn_cast<PHINode>(u);
+
+            if (PI) {
+              users.insert(users.end(), PI->user_begin(), PI->user_end());
+              todelete.push_back(PI);
+              continue;
+            }
+
+            llvm::BitCastInst* BCI = dyn_cast<BitCastInst>(u);
+
+            if (BCI) {
+              users.insert(users.end(), BCI->user_begin(), BCI->user_end());
+              todelete.push_back(BCI);
+              continue;
+            }
+            
+            llvm::BranchInst* BI = dyn_cast<BranchInst>(u);
+            assert(BI);
+
+            IRBuilder<> brBuilder(BI);
+            BasicBlock *trueB = BI->getSuccessor(0);
+            brBuilder.CreateBr(trueB);
+
+            toclean.insert(BI->getParent());
+            // Replace branch with a direct jump
+            BI->eraseFromParent();
+            tomerge.push_back(trueB);
+          }
+
           // Remove old CI and BI
-          BI->eraseFromParent();
+          for (auto u = todelete.rbegin(); u != todelete.rend(); u++) {
+            (*u)->eraseFromParent();
+          }
+
           CI->eraseFromParent();
+
+          for (auto bb : toclean) {
+
+            std::vector<Instruction*> gunk;
+
+            for (auto instI = bb->rbegin(); instI != bb->rend(); instI ++) {
+              Instruction &inst = *instI;
+              if (!inst.isTerminator()) {
+                std::cerr << "Gunk.. "; inst.dump();
+                gunk.push_back(&inst);
+              } else {
+                break;
+              }
+            }
+
+            for (auto inst : gunk) {
+              assert(isInstructionTriviallyDead(inst, NULL));
+              inst->eraseFromParent();
+            }
+          }
+
           // Merge blocks.
-          assert(MergeBlockIntoPredecessor(trueB));
+          for (auto bb = tomerge.begin(); bb != tomerge.end(); bb++) {
+            BasicBlock *upred = (*bb)->getUniquePredecessor();
+
+            if (upred && !upred->getTerminator()) {
+              upred->dump();
+            }
+
+            if (!MergeBlockIntoPredecessor(*bb))
+              merged ++;
+            else
+              notmerged ++;
+          }
         }
       }
 
+      sd_print("SDSubst: merged: %d not_merged: %d\n", merged, notmerged);
       sd_print("SDSubst: indices: %d ranges: %d eq_checks: %d const_ptr: %d\n", indexSubst, rangeSubst, eqSubst, constPtr);
       return indexSubst > 0 || rangeSubst > 0 || eqSubst > 0 || constPtr > 0;
     }
