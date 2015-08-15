@@ -632,9 +632,31 @@ namespace {
             constPtr++;
           } else
           if (widthInt > 1) {
-            // Range no-ops
+            // Range - 25 no-ops
             llvm::InlineAsm *AsmCode = InlineAsm::get(FunctionType::get(Type::getVoidTy(CI->getContext()), false),
-                                                      "jmp .+3 \n"
+                                                      "jmp .+25 \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
                                                       "nop",
                                                       "",
                                                       /*hasSideEffects=*/ true,
@@ -647,9 +669,20 @@ namespace {
 
             rangeSubst += 1;
           } else {
-            // Eq no-ops
+            // Eq - 14 no-ops
             llvm::InlineAsm *AsmCode = InlineAsm::get(FunctionType::get(Type::getVoidTy(CI->getContext()), false),
-                                                      "jmp .+3\n"
+                                                      "jmp .+14\n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
+                                                      "nop  \n"
                                                       "nop",
                                                       "",
                                                       /*hasSideEffects=*/ true,
