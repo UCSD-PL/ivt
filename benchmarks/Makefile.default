@@ -15,7 +15,7 @@ LDFLAGS = $(OPT) -B $(BINUTILS_BUILD_DIR)/gold \
 		  -Wl,-plugin $(LLVM_BUILD_DIR)/../lib/LLVMgold.so \
 		  -Wl,-plugin-opt=mcpu=x86-64 \
 		  -Wl,-plugin-opt=save-temps \
-		  -Wl,-plugin-opt=sd-ivtbl
+		  -Wl,-plugin-opt=sd-ovtbl
 LDLIBS  = -L$(LLVM_DIR)/../lib \
 		  -L$(LLVM_DIR)/libdyncast -ldyncast
 AR      = $(LLVM_DIR)/scripts/ar

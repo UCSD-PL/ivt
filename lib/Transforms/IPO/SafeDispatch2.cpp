@@ -9,6 +9,7 @@
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/InstrTypes.h"
 #include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/InlineAsm.h"
 #include "llvm/Pass.h"
 #include "llvm/Analysis/TargetLibraryInfo.h"
 #include "llvm/Transforms/Utils/Local.h"
@@ -450,7 +451,7 @@ namespace {
       fprintf(stderr, "\n");
       sd_print("Finished running the 2nd pass...\n");
 
-      sdModule->removeVtablesAndThunks(M);
+//      sdModule->removeVtablesAndThunks(M);
 
       sdModule->clearAnalysisResults();
 
@@ -635,6 +636,22 @@ namespace {
 
             llvm::Value *inRange = builder.CreateICmpULE(diffRor, width);
               
+            const char* nops[] = {"", "", "xchg eax,eax", "nopl 0(%[re]ax)"};
+
+            llvm::InlineAsm *AsmCode = InlineAsm::get(FunctionType::get(Type::getVoidTy(CI->getContext()), false),
+                                                      "jz $+8",
+                                                      "",
+                                                      /*hasSideEffects=*/ true,
+                                                      false,
+                                                      llvm::InlineAsm::AD_Intel);
+            assert(AsmCode);
+            sd_print("1\n");
+
+            IRBuilder<> builder(CI);
+            Instruction* emptyInst = builder.CreateCall(AsmCode);
+            assert(emptyInst);
+            sd_print("2\n");
+
             CI->replaceAllUsesWith(inRange);
             CI->eraseFromParent();
 
@@ -888,7 +905,8 @@ void SDModule2::createThunkFunctions(Module& M, const vtbl_name_t& rootName) {
             int64_t oldIndex = oldVal->getSExtValue() / WORD_WIDTH;
 
             // calculate the new one
-            int64_t newIndex = oldIndexToNew2(vtbl_t(vtbl,order), oldIndex, true);
+//            int64_t newIndex = oldIndexToNew2(vtbl_t(vtbl,order), oldIndex, true);
+            int64_t newIndex = oldIndex;
 
             Value* newValue = ConstantInt::get(IntegerType::getInt64Ty(C), newIndex * WORD_WIDTH);
 
@@ -2229,7 +2247,8 @@ void SDChangeIndices2::handleSDGetVtblIndex(Module* M) {
     std::string className = sd_getClassNameFromMD(mdNode,0);
 
     // calculate the new index
-    int64_t newIndex = sdModule->oldIndexToNew(className,oldIndex, true);
+//    int64_t newIndex = sdModule->oldIndexToNew(className,oldIndex, true);
+    int64_t newIndex = oldIndex;
 
     // convert the integer to llvm value
     llvm::Value* newConsIntInd = llvm::ConstantInt::get(intType, newIndex);
