@@ -636,21 +636,18 @@ namespace {
 
             llvm::Value *inRange = builder.CreateICmpULE(diffRor, width);
               
-            const char* nops[] = {"", "", "xchg eax,eax", "nopl 0(%[re]ax)"};
-
             llvm::InlineAsm *AsmCode = InlineAsm::get(FunctionType::get(Type::getVoidTy(CI->getContext()), false),
-                                                      "jz $+8",
+                                                      "jmp .+3 \n"
+                                                      "nop",
                                                       "",
                                                       /*hasSideEffects=*/ true,
                                                       false,
-                                                      llvm::InlineAsm::AD_Intel);
+                                                      llvm::InlineAsm::AD_ATT);
             assert(AsmCode);
-            sd_print("1\n");
 
             IRBuilder<> builder(CI);
             Instruction* emptyInst = builder.CreateCall(AsmCode);
             assert(emptyInst);
-            sd_print("2\n");
 
             CI->replaceAllUsesWith(inRange);
             CI->eraseFromParent();
@@ -659,6 +656,19 @@ namespace {
           } else {
             llvm::Value *vptrInt = builder.CreatePtrToInt(vptr, IntPtrTy);
             llvm::Value *inRange = builder.CreateICmpEQ(vptrInt, start);
+
+            llvm::InlineAsm *AsmCode = InlineAsm::get(FunctionType::get(Type::getVoidTy(CI->getContext()), false),
+                                                      "jmp .+3\n"
+                                                      "nop",
+                                                      "",
+                                                      /*hasSideEffects=*/ true,
+                                                      false,
+                                                      llvm::InlineAsm::AD_ATT);
+            assert(AsmCode);
+
+            IRBuilder<> builder(CI);
+            Instruction* emptyInst = builder.CreateCall(AsmCode);
+            assert(emptyInst);
 
             CI->replaceAllUsesWith(inRange);
             CI->eraseFromParent();
