@@ -301,8 +301,8 @@ namespace {
 
       for (roots_t::iterator itr = roots.begin(); itr != roots.end(); itr++) {
         vtbl_name_t vtbl = *itr;
-        createThunkFunctions(M, vtbl); // replace the virtual thunks with the modified ones
-        createNewVTable(M, vtbl);      // finally, emit the global variable
+//        createThunkFunctions(M, vtbl); // replace the virtual thunks with the modified ones
+//        createNewVTable(M, vtbl);      // finally, emit the global variable
 
         // exploit this loop to calculate the sizes of all possible subgraphs
         // that has a primary vtable as a root
@@ -428,6 +428,13 @@ namespace {
       checkMdId     = M.getMDKindID(SD_MD_CHECK);
 
       handleSDGetVtblIndex(&M);
+
+//      for (const GlobalVariable& gv : M.getGlobalList()) {
+//        if(gv.getName().startswith("_ZTV")) {
+//          gv.dump();
+//        }
+//      }
+
       handleSDCheckVtbl(&M);
       handleRemainingSDGetVcallIndex(&M);
 
@@ -454,7 +461,7 @@ namespace {
 
 //      sdModule->removeVtablesAndThunks(M);
 
-      sdModule->clearAnalysisResults();
+//      sdModule->clearAnalysisResults();
 
       sd_print("removed thunks...\n");
 
@@ -603,6 +610,7 @@ namespace {
         LLVMContext& C = M.getContext();
         Type *IntPtrTy = DL.getIntPtrType(C, 0);
 
+//        sd_print("here\n");
         for (const Use &U : sd_subst_rangeF->uses()) {
           // get the call inst
           llvm::CallInst* CI = cast<CallInst>(U.getUser());
@@ -614,13 +622,16 @@ namespace {
           llvm::Constant* start = dyn_cast<Constant>(CI->getArgOperand(1));
           llvm::ConstantInt* width = dyn_cast<ConstantInt>(CI->getArgOperand(2));
           llvm::ConstantInt* alignment = dyn_cast<ConstantInt>(CI->getArgOperand(3));
+//          CI->dump();
           assert(vptr && start && width);
 
           int64_t widthInt = width->getSExtValue();
           int64_t alignmentInt = alignment->getSExtValue();
           int alignmentBits = floor(log(alignmentInt + 0.5)/log(2.0));
 
+//          sd_print("start op #: %u\n", start->getNumOperands());
           llvm::Constant* rootVtblInt = dyn_cast<llvm::Constant>(start->getOperand(0));
+//          sd_print("rootVtblInt op #: %u\n", start->getNumOperands());
           llvm::GlobalVariable* rootVtbl = dyn_cast<llvm::GlobalVariable>(
             rootVtblInt->getOperand(0));
           llvm::ConstantInt* startOff = dyn_cast<llvm::ConstantInt>(start->getOperand(1));
@@ -698,11 +709,13 @@ namespace {
           std::vector<BasicBlock*> tomerge;
           std::set<BasicBlock*> toclean;
 
+//          sd_print("here1\n");
           while (!users.empty()) {
             llvm::User *u = users.back();
             llvm::Instruction *I = dyn_cast<Instruction>(u);
-  
+
             assert(I);
+//            I->dump();
             users.pop_back();
 
             llvm::PHINode * PI = dyn_cast<PHINode>(u);
@@ -2276,7 +2289,7 @@ void SDModule2::removeVtablesAndThunks(Module &M) {
   for (auto itr : oldVTables) {
     GlobalVariable* var = M.getGlobalVariable(itr.first, true);
     assert(var && var->use_empty());
-//    sd_print("deleted vtbl: %s\n", var->getName().data());
+    sd_print("deleted vtbl: %s\n", var->getName().data());
     var->eraseFromParent();
   }
 
@@ -2409,11 +2422,26 @@ void SDChangeIndices2::handleSDCheckVtbl(Module* M) {
     llvm::Constant *start;
     int64_t rangeWidth;
 
+    LLVMContext& C = CI->getContext();
+
     if (sdModule->knowsAbout(vtbl)) {
-      // calculate the new index
-      start = sdModule->isUndefined(vtbl) ?
-        sdModule->getVTableRangeStart(sdModule->getFirstDefinedChild(vtbl)) :
-        sdModule->getVTableRangeStart(vtbl);
+//      // calculate the new index
+//      start = sdModule->isUndefined(vtbl) ?
+//        sdModule->getVTableRangeStart(sdModule->getFirstDefinedChild(vtbl)) :
+//        sdModule->getVTableRangeStart(vtbl);
+
+      SDModule2::vtbl_name_t oldName = sdModule->isUndefined(vtbl) ?
+        sdModule->getFirstDefinedChild(vtbl).first :
+        vtbl.first;
+      GlobalVariable* oldGV = M->getGlobalVariable(oldName, true);
+      assert(oldGV);
+
+      Constant* gvInt         = ConstantExpr::getPtrToInt(oldGV, Type::getInt64Ty(C));
+      Constant* offsetVal     = ConstantInt::get(Type::getInt64Ty(C), 42 * WORD_WIDTH);
+      Constant* gvOffInt      = ConstantExpr::getAdd(gvInt, offsetVal);
+
+      start = gvOffInt;
+
       rangeWidth = sdModule->getCloudSize(vtbl.first);
     } else {
       // This is a class we have no metadata about (i.e. doesn't have any
@@ -2423,7 +2451,6 @@ void SDChangeIndices2::handleSDCheckVtbl(Module* M) {
       rangeWidth = 0;
       //std::cerr << "Emitting empty range for " << vtbl.first << "," << vtbl.second << "\n";
     }
-    LLVMContext& C = CI->getContext();
 
     if (start) {
       IRBuilder<> builder(CI);
@@ -2477,8 +2504,6 @@ void SDChangeIndices2::handleSDCheckVtbl(Module* M) {
       }        
       */
     } else {
-      //std::cerr << "llvm.sd.callsite.false:" << vtbl.first << "," << vtbl.second 
-        //<< std::endl;
       CI->replaceAllUsesWith(llvm::ConstantInt::getFalse(C));
       CI->eraseFromParent();
     }

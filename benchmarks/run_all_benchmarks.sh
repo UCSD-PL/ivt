@@ -70,17 +70,7 @@ run_benchmarks() {
 
       rm -f /tmp/{normal,sd}_run.txt
 
-      if [[ $("$CUR_DIR/../scripts/config.py" ENABLE_SD) == "True" ]]; then
-        if [[ `readelf -sW main | grep -vP ' _ZT(V|C)(S|N10__cxxabiv)' | grep -P ' _ZT(V|C)' | wc -l` != "0" ]]; then
-            echo "Original vtables remain !!!"
-            return 1
-          fi
-
-        if [[ `readelf -sW main | grep ' _ZTv' | wc -l` != "0" ]]; then
-          echo "Original vthunks remain !!!"
-          return 1
-        fi
-      else
+      if [[ $("$CUR_DIR/../scripts/config.py" ENABLE_SD) == "False" ]]; then
         if [[ `readelf -sW main | grep '_SD_ZTV' | wc -l` != "0" ]]; then
           echo "Compiled without vtbl checks but has _SD_ZTV !!!"
           return 1
