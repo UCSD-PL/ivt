@@ -7,13 +7,13 @@
 class Base
 {
 public:
-    Base() {} 
-    virtual ~Base() {} 
+    Base() {}
+    virtual ~Base() {}
     virtual void hello();
     virtual void oneIntArg1(int a);
     virtual void oneIntArg2(int a);
 };
- 
+
 class Derived : public Base
 {
     int val;
