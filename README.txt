@@ -4,16 +4,23 @@ Low Level Virtual Machine (LLVM) + IVT/OVT (Interleaved/Ordered VTables)
 To get started:
 
 
-0) Setup prerequisites - download and build binutils with gold support.
+1) Setup prerequisites - download and build binutils with gold support.
 Lets say that binutils source is in $(BINUTILS_SRC) and the built version
 is in $(BINUTILS_BUILD).
 
-1) Clone the repo in $(REPO_DIR)
+  git clone --depth 1 git://sourceware.org/git/binutils-gdb.git $(BINUTILS_SRC)
+  mkdir $(BINUTILS_BUILD)
+  cd $(BINUTILS_BUILD)
+  $(BINUTILS_SRC)/configure --enable-gold --enable-plugins --disable-werror
+  make -j 8 (or however many cores you can spare)
 
-2) Make a build directory $(REPO_BUILD_DIR)
+2) Clone the repo in $(REPO_DIR)
 
-3) Build the repo by:
+  git clone https://github.com/UCSD-PL/ivt.git $(REPO_DIR)
 
+3) Build the repo in a directory $(REPO_BUILD_DIR):
+
+  mkdir $(REPO_BUILD_DIR)
   cd $(REPO_BUILD_DIR)
   ./configure --enable-optimized=1 --with-binutils-include=$(BINUTILS_SRC)/include
   make -j 8 (or however many cores you can spare...)
