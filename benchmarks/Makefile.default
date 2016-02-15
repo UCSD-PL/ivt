@@ -17,7 +17,7 @@ LDFLAGS = $(OPT) -B $(BINUTILS_BUILD_DIR)/gold \
 		  -Wl,-plugin-opt=save-temps \
 		  -Wl,-plugin-opt=sd-ovtbl
 LDLIBS  = -L$(LLVM_DIR)/../lib \
-		  -L$(LLVM_DIR)/libdyncast -ldyncast -ldlcfi -Wl,-rpath=$(LLVM_DIR)/../lib
+		  -L$(LLVM_DIR)/libdyncast -L$(LLVM_DIR)/libdlcfi -ldyncast -ldlcfi -Wl,-rpath=$(LLVM_DIR)/libdlcfi
 AR      = $(LLVM_DIR)/scripts/ar
 endif
 
