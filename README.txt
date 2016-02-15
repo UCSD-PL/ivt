@@ -1,17 +1,44 @@
-Low Level Virtual Machine (LLVM)
+Low Level Virtual Machine (LLVM) + IVT/OVT (Interleaved/Ordered VTables)
 ================================
 
-This directory and its subdirectories contain source code for LLVM,
-a toolkit for the construction of highly optimized compilers,
-optimizers, and runtime environments.
+To get started:
 
-LLVM is open source software. You may freely distribute it under the terms of
-the license agreement found in LICENSE.txt.
 
-Please see the documentation provided in docs/ for further
-assistance with LLVM, and in particular docs/GettingStarted.rst for getting
-started with LLVM and docs/README.txt for an overview of LLVM's
-documentation setup.
+0) Setup prerequisites - download and build binutils with gold support.
+Lets say that binutils source is in $(BINUTILS_SRC) and the built version
+is in $(BINUTILS_BUILD).
 
-If you're writing a package for LLVM, see docs/Packaging.rst for our
-suggestions.
+1) Clone the repo in $(REPO_DIR)
+
+2) Make a build directory $(REPO_BUILD_DIR)
+
+3) Build the repo by:
+
+  cd $(REPO_BUILD_DIR)
+  ./configure --enable-optimized=1 --with-binutils-include=$(BINUTILS_SRC)/include
+  make -j 8 (or however many cores you can spare...)
+
+4) Build the two libraries - libdlcfi and libdyncast
+
+  cd $(REPO_DIR)/libdlcfi
+  make clean all
+  cd $(REPO_DIR)/libdyncast
+  make clean all
+
+5) Set the benchmark paths - edit $(REPO_DIR)/benchmarks/Makefile.config and set
+  the variables:
+
+  LLVM_DIR = $(REPO_DIR)
+  LLVM_BUILD_DIR = $(REPO_BUILD_DIR)
+  BINUTILS_BUILD_DIR = $(BINUTILS_BUILD) 
+
+6) Run the benchmarks
+
+  cd $(REPO_DIR)/benchmarks
+  ./run_all_benchmarks.sh
+
+If the benchmarks run successfully, you should see something like this in the end:
+
+############################################################
+DONE !!!
+############################################################
