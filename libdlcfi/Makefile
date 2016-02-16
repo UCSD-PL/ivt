@@ -1,14 +1,16 @@
-CC=/home/dimo/work/sd3.0/llvm-build/Release+Asserts/bin/clang++
-AR=/home/dimo/work/sd3.0/binutils-build/binutils/ar
-GOLD_PLUGIN=/home/dimo/work/sd3.0/llvm-rel-build/Release+Asserts/lib/LLVMgold.so
-GOLD_DIR=/home/dimo/work/sd3.0/binutils-build/gold
+include ../benchmarks/folder.cfg
+
+CC=          $(LLVM_BUILD_DIR)/clang++
+AR=          $(BINUTILS_BUILD_DIR)/binutils/ar
+GOLD_DIR=    $(BINUTILS_BUILD_DIR)/gold
+GOLD_PLUGIN= $(LLVM_BUILD_DIR)/../lib/LLVMgold.so
 
 all:	libdlcfi.so
 
 
 libdlcfi.so:	dlcfi.o
 	$(CC) -shared -B $(GOLD_DIR) -o $@ dlcfi.o -ldl
-	
+
 
 .cpp.o:
 	$(CC) -fPIC -g -c $< -o $@

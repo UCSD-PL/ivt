@@ -25,19 +25,19 @@ is in $(BINUTILS_BUILD).
   ./configure --enable-optimized=1 --with-binutils-include=$(BINUTILS_SRC)/include
   make -j 8 (or however many cores you can spare...)
 
-4) Build the two libraries - libdlcfi and libdyncast
+4) Set the benchmark paths - edit $(REPO_DIR)/benchmarks/folder.cfg and set
+  the variables:
+
+  LLVM_DIR="$(REPO_DIR)"
+  LLVM_BUILD_DIR="$(REPO_BUILD_DIR)/Release+Asserts/bin"
+  BINUTILS_BUILD_DIR="$(BINUTILS_BUILD)"
+
+5) Build the two libraries - libdlcfi and libdyncast
 
   cd $(REPO_DIR)/libdlcfi
   make clean all
   cd $(REPO_DIR)/libdyncast
   make clean all
-
-5) Set the benchmark paths - edit $(REPO_DIR)/benchmarks/Makefile.config and set
-  the variables:
-
-  LLVM_DIR = $(REPO_DIR)
-  LLVM_BUILD_DIR = $(REPO_BUILD_DIR)
-  BINUTILS_BUILD_DIR = $(BINUTILS_BUILD) 
 
 6) Run the benchmarks
 

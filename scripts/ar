@@ -5,20 +5,11 @@ shift
 
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
->&2 echo "AR: $(${DIR}/config.py BINUTILS_BUILD_DIR)/binutils/ar ${command} --plugin $(${DIR}/config.py GOLD_PLUGIN) $*"
+. $DIR/../benchmarks/folder.cfg
 
-"$(${DIR}/config.py BINUTILS_BUILD_DIR)/binutils/ar" ${command} --plugin "$(${DIR}/config.py GOLD_PLUGIN)" $*
+AR=$BINUTILS_BUILD_DIR/binutils/ar
+GOLD_PLUGIN=$LLVM_BUILD_DIR/../lib/LLVMgold.so
 
-#>&2 echo "AR: $(${DIR}/config.py BINUTILS_BUILD_DIR)/binutils/ar ${command}s --plugin $(${DIR}/config.py GOLD_PLUGIN) $*"
+>&2 echo "AR: $AR ${command} --plugin $GOLD_PLUGIN $*"
 
-#"$(${DIR}/config.py BINUTILS_BUILD_DIR)/binutils/ar" ${command}s --plugin "$(${DIR}/config.py GOLD_PLUGIN)" $*
-
-#for arg in $*; do
-  #echo $arg | grep '^.*\.a$' > /dev/null
-  #if [[ $? -eq 0 ]] ; then
-    #target=$arg
-  #fi
-#done
-
-#>&2 echo "RANLIB $(${DIR}/config.py BINUTILS_BUILD_DIR)/binutils/ranlib --plugin $(${DIR}/config.py GOLD_PLUGIN) $target"
-#"$(${DIR}/config.py BINUTILS_BUILD_DIR)/binutils/ranlib" --plugin "$(${DIR}/config.py GOLD_PLUGIN)" $target
+$AR $command --plugin $GOLD_PLUGIN $*

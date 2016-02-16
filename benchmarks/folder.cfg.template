@@ -1,0 +1,6 @@
+# put the full path of the directories with quotes
+# e.g. LLVM_DIR="..../ivt"
+
+LLVM_DIR=
+LLVM_BUILD_DIR=
+BINUTILS_BUILD_DIR=
