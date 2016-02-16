@@ -31,15 +31,20 @@ is in $(BINUTILS_BUILD).
   LLVM_DIR="$(REPO_DIR)"
   LLVM_BUILD_DIR="$(REPO_BUILD_DIR)/Release+Asserts/bin"
   BINUTILS_BUILD_DIR="$(BINUTILS_BUILD)"
+  
+5) Symlink ld-new to ld inside the binutils build's gold directory:
 
-5) Build the two libraries - libdlcfi and libdyncast
+  cd $(BINUTILS_BUILD)/gold
+  ln -s ld-new ld
+
+6) Build the two libraries - libdlcfi and libdyncast
 
   cd $(REPO_DIR)/libdlcfi
   make clean all
   cd $(REPO_DIR)/libdyncast
   make clean all
 
-6) Run the benchmarks
+7) Run the benchmarks
 
   cd $(REPO_DIR)/benchmarks
   ./run_all_benchmarks.sh
