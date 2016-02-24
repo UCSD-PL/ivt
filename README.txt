@@ -14,6 +14,9 @@ is in $(BINUTILS_BUILD).
   $(BINUTILS_SRC)/configure --enable-gold --enable-plugins --disable-werror
   make -j 8 (or however many cores you can spare)
 
+(If you run into any weird errors with your binutils build, try removing the 
+$(BINUTILS_BUILD) directory, re-creating it, and running configure/make again)
+
 2) Clone the repo in $(REPO_DIR)
 
   git clone https://github.com/UCSD-PL/ivt.git $(REPO_DIR)
