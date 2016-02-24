@@ -41,8 +41,13 @@ run_benchmarks() {
       echo "############################################################"
       echo "g++ running $b"
 
-      ./main 2>&1 > /tmp/normal_run.txt
-      if [[ $? -ne 0 ]]; then echo "g++ run fail"; return 1; fi
+      containsElement "$b" "${neg_benchs[@]}"
+      local isNeg=$?
+
+      if [[ $isNeg -ne 0 ]]; then
+          ./main 2>&1 > /tmp/normal_run.txt
+          if [[ $? -ne 0 ]]; then echo "g++ run fail"; return 1; fi
+      fi
 
       echo "############################################################"
       echo "sd compiling $b"
@@ -53,8 +58,6 @@ run_benchmarks() {
       echo "############################################################"
       echo "sd running $b"
 
-      containsElement "$b" "${neg_benchs[@]}"
-      local isNeg=$?
       if [[ $isNeg -eq 0 ]]; then
         ./main 2>&1 > /dev/null
         if [[ $? -eq 0 ]]; then echo "neg bench $b should fail!"; return 1; fi
@@ -70,7 +73,7 @@ run_benchmarks() {
 
       rm -f /tmp/{normal,sd}_run.txt
 
-      if [[ $("$CUR_DIR/../scripts/config.py" ENABLE_SD) == "True" ]]; then
+      # if [[ $("$CUR_DIR/../scripts/config.py" ENABLE_SD) == "True" ]]; then
         if [[ `readelf -sW main | grep -vP ' _ZT(V|C)(S|N10__cxxabiv)' | grep -P ' _ZT(V|C)' | wc -l` != "0" ]]; then
             echo "Original vtables remain !!!"
             return 1
@@ -80,16 +83,16 @@ run_benchmarks() {
           echo "Original vthunks remain !!!"
           return 1
         fi
-      else
-        if [[ `readelf -sW main | grep '_SD_ZTV' | wc -l` != "0" ]]; then
-          echo "Compiled without vtbl checks but has _SD_ZTV !!!"
-          return 1
-        fi
-        if [[ `readelf -sW main | grep '_SVT_ZTv' | wc -l` != "0" ]]; then
-          echo "Compiled without vtbl checks but has duplicated vthunks !!!"
-          return 1
-        fi
-      fi
+      # else
+      #   if [[ `readelf -sW main | grep '_SD_ZTV' | wc -l` != "0" ]]; then
+      #     echo "Compiled without vtbl checks but has _SD_ZTV !!!"
+      #     return 1
+      #   fi
+      #   if [[ `readelf -sW main | grep '_SVT_ZTv' | wc -l` != "0" ]]; then
+      #     echo "Compiled without vtbl checks but has duplicated vthunks !!!"
+      #     return 1
+      #   fi
+      # fi
 
       popd > /dev/null
     else

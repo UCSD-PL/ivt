@@ -28,21 +28,26 @@ $(BINUTILS_BUILD) directory, re-creating it, and running configure/make again)
   ./configure --enable-optimized=1 --with-binutils-include=$(BINUTILS_SRC)/include
   make -j 8 (or however many cores you can spare...)
 
-4) Build the two libraries - libdlcfi and libdyncast
+4) Set the benchmark paths - edit $(REPO_DIR)/benchmarks/folder.cfg and set
+  the variables:
+
+  LLVM_DIR="$(REPO_DIR)"
+  LLVM_BUILD_DIR="$(REPO_BUILD_DIR)/Release+Asserts/bin"
+  BINUTILS_BUILD_DIR="$(BINUTILS_BUILD)"
+  
+5) Symlink ld-new to ld inside the binutils build's gold directory:
+
+  cd $(BINUTILS_BUILD)/gold
+  ln -s ld-new ld
+
+6) Build the two libraries - libdlcfi and libdyncast
 
   cd $(REPO_DIR)/libdlcfi
   make clean all
   cd $(REPO_DIR)/libdyncast
   make clean all
 
-5) Set the benchmark paths - edit $(REPO_DIR)/benchmarks/Makefile.config and set
-  the variables:
-
-  LLVM_DIR = $(REPO_DIR)
-  LLVM_BUILD_DIR = $(REPO_BUILD_DIR)
-  BINUTILS_BUILD_DIR = $(BINUTILS_BUILD) 
-
-6) Run the benchmarks
+7) Run the benchmarks
 
   cd $(REPO_DIR)/benchmarks
   ./run_all_benchmarks.sh

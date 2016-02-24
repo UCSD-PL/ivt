@@ -1,6 +1,7 @@
 OBJS =
 LIB_NAMES = libmy1.a libmy2.a
 
+include ../folder.cfg
 include ../Makefile.config
 include ../Makefile.default
 

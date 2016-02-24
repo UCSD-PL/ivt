@@ -9,3 +9,4 @@ main
 *.files
 *.includes
 output.txt
+folder.cfg
