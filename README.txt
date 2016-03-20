@@ -25,7 +25,7 @@ $(BINUTILS_BUILD) directory, re-creating it, and running configure/make again)
 
   mkdir $(REPO_BUILD_DIR)
   cd $(REPO_BUILD_DIR)
-  ./configure --enable-optimized=1 --with-binutils-include=$(BINUTILS_SRC)/include
+  $(REPO_DIR)/configure --enable-optimized=1 --with-binutils-include=$(BINUTILS_SRC)/include
   make -j 8 (or however many cores you can spare...)
 
 4) Set the benchmark paths - edit $(REPO_DIR)/benchmarks/folder.cfg and set
